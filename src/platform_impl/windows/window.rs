@@ -1,5 +1,4 @@
-// Copyright 2014-2021 The winit contributors
-// Copyright 2021-2022 Tauri Programme within The Commons Conservancy
+// Copyright 2014-2021 The winit contributors Copyright 2021-2022 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 
 #![cfg(target_os = "windows")]
@@ -313,8 +312,6 @@ impl Window {
   pub fn set_minimizable(&self, minimizable: bool) {
     let window = self.window.clone();
     let window_state = Arc::clone(&self.window_state);
-
-    println!("Setting minimizable to {}", minimizable);
 
     self.thread_executor.execute_in_thread(move || {
       WindowState::set_window_flags(window_state.lock(), window.0, |f| {
