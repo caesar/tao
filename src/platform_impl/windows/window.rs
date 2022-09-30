@@ -310,8 +310,17 @@ impl Window {
   }
 
   #[inline]
-  pub fn set_minimizable(&self, _minimizable: bool) {
-    warn!("`Window::set_minimizable` is ignored on Windows")
+  pub fn set_minimizable(&self, minimizable: bool) {
+    let window = self.window.clone();
+    let window_state = Arc::clone(&self.window_state);
+
+    println!("Setting minimizable to {}", minimizable);
+
+    self.thread_executor.execute_in_thread(move || {
+      WindowState::set_window_flags(window_state.lock(), window.0, |f| {
+        f.set(WindowFlags::MINIMIZABLE, minimizable)
+      });
+    });
   }
 
   #[inline]
@@ -492,8 +501,8 @@ impl Window {
 
   #[inline]
   pub fn is_minimizable(&self) -> bool {
-    warn!("`Window::is_minimizable` is ignored on Windows");
-    false
+    let window_state = self.window_state.lock();
+    window_state.window_flags.contains(WindowFlags::MINIMIZABLE)
   }
 
   #[inline]
@@ -901,6 +910,7 @@ unsafe fn init<T: 'static>(
   window_flags.set(WindowFlags::TRANSPARENT, attributes.transparent);
   // WindowFlags::VISIBLE and MAXIMIZED are set down below after the window has been configured.
   window_flags.set(WindowFlags::RESIZABLE, attributes.resizable);
+  window_flags.set(WindowFlags::MINIMIZABLE, attributes.minimizable);
 
   let parent = match pl_attribs.parent {
     Parent::ChildOf(parent) => {
